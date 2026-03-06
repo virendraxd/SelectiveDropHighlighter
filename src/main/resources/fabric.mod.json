@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "selective-drop-highlighter",
+  "version": "${version}",
+  "name": "Selective Drop Highlighter",
+  "description": "A client-side mod that allows you to highlight specific dropped items with rarity-based colors. Perfect for tracking loot in busy environments.",
+  "authors": [
+    "KnightGost"
+  ],
+  "contact": {
+    "homepage": "https://github.com/virendraxd/SelectiveDropHighlighter",
+    "sources": "https://github.com/virendraxd/SelectiveDropHighlighter"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/selective-drop-highlighter/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.knightgost.sdh.SelectiveDropHighlighterClient"
+    ],
+    "modmenu": [
+      "com.knightgost.sdh.SDHModMenuImpl"
+    ]
+  },
+  "mixins": [
+    "selective-drop-highlighter.mixins.json",
+    {
+      "config": "selective-drop-highlighter.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*",
+    "yet_another_config_lib_v3": ">=3.8.2"
+  }
+}

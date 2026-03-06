@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.knightgost.sdh.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ItemGlowMixin",
+    "HandledScreenAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
