@@ -23,9 +23,13 @@ public class SelectiveDropHighlighterClient implements ClientModInitializer {
     private static boolean wasHeld = false;
 
     // Settings>Controls>Key_Binds here
+    //? if >=1.21.9 {
     public static final KeyBinding.Category SDH_CATEGORY = KeyBinding.Category.create(
-            Identifier.of("selective-drop-highlighter", "general")
+            net.minecraft.util.Identifier.of("selective-drop-highlighter", "general")
     );
+    //? } else {
+    /*public static final String SDH_CATEGORY = "category.selective-drop-highlighter.general";
+    *///? }
 
     private static void playPling(net.minecraft.client.MinecraftClient client, float pitch) {
         //? if >=1.21.11 {
@@ -58,7 +62,11 @@ public class SelectiveDropHighlighterClient implements ClientModInitializer {
 
             InputUtil.Key boundKey = KeyBindingHelper.getBoundKeyOf(toggleKey);
             // Now check if THAT specific key is being held
+            //? if >=1.21.9 {
             boolean isHeld = InputUtil.isKeyPressed(client.getWindow(), boundKey.getCode());
+            //? } else {
+            /*boolean isHeld = InputUtil.isKeyPressed(client.getWindow().getHandle(), boundKey.getCode());
+            *///? }
 
             // Only trigger once per physical press
             if (isHeld && !wasHeld) {
