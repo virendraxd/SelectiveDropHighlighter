@@ -13,7 +13,7 @@ public class SDHMenu {
         YetAnotherConfigLib.Builder builder = YetAnotherConfigLib.createBuilder()
                 .title(Text.literal("SDH Settings"));
 
-        // CATEGORY 1: Settings (Global Toggles)
+        // CATEGORY 1: Settings Tab (Global Toggles)
         ConfigCategory settingsCategory = ConfigCategory.createBuilder()
                 .name(Text.literal("Settings"))
                 .option(Option.<Boolean>createBuilder()
@@ -24,7 +24,7 @@ public class SDHMenu {
                         .build())
                 .build();
 
-        // CATEGORY 2: Highlighted Items (Target for Search Bar)
+        // CATEGORY 2: Highlighted Items Tab (Target for Search Bar)
         ConfigCategory.Builder listCategoryBuilder = ConfigCategory.createBuilder()
                 .name(Text.literal("Highlighted Items"));
 
@@ -36,12 +36,30 @@ public class SDHMenu {
                         listCategoryBuilder.option(Option.<Boolean>createBuilder()
                                 .name(item.getName())
                                 .description(OptionDescription.of(Text.literal("Uncheck to remove this item.")))
-                                .binding(true, () -> true, val -> {
-                                    if (!val) {
-                                        SDHConfig.HIGHLIGHTED_ITEMS.remove(item);
-                                        SDHConfig.save();
-                                    }
-                                })
+                                .binding(
+                                        true,
+                                        () -> {
+                                            //? if <1.21.11 {
+                                            /*return SDHConfig.HIGHLIGHTED_ITEMS.stream().anyMatch(i ->
+                                                net.minecraft.registry.Registries.ITEM.getId(i).equals(net.minecraft.registry.Registries.ITEM.getId(item)));
+                                            *///? } else {
+                                            return SDHConfig.HIGHLIGHTED_ITEMS.contains(item);
+                                            //? }
+                                        },
+                                        val -> {
+                                            if (!val) {
+                                                //? if <1.21.11 {
+                                                /*SDHConfig.HIGHLIGHTED_ITEMS.removeIf(i ->
+                                                    net.minecraft.registry.Registries.ITEM.getId(i)
+                                                    .equals(net.minecraft.registry.Registries.ITEM.getId(item))
+                                                );
+                                                *///? } else {
+                                                SDHConfig.HIGHLIGHTED_ITEMS.remove(item);
+                                                //? }
+                                                SDHConfig.save();
+                                            }
+                                        }
+                                )
                                 .controller(TickBoxControllerBuilder::create)
                                 .build());
                     });
@@ -50,7 +68,8 @@ public class SDHMenu {
             listCategoryBuilder.option(Option.<String>createBuilder()
                     .name(Text.literal("No Items Selected"))
                     .description(OptionDescription.of(Text.literal("Hover over an item and press H!")))
-                    .binding("None", () -> "None", v -> {})
+                    .binding("None", () -> "None", v -> {
+                    })
                     .controller(dev.isxander.yacl3.api.controller.StringControllerBuilder::create)
                     .build());
         }

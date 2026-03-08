@@ -41,3 +41,8 @@ replay_*.log
 
 # Crash Reports
 crash-reports/
+
+# Stonecutter & Fabric Run Folders
+**/run/
+**/run-client/
+**/run-server/

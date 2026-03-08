@@ -13,17 +13,17 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class SDHConfig {
-    // This is the list that stores your items
+    // List that stores highlighted items
     public static final Set<Item> HIGHLIGHTED_ITEMS = new HashSet<>();
 
-    // This defines where the file is saved (usually .minecraft/config/sdh_config.json)
+    // File save path (.minecraft/config/sdh_config.json)
     private static final Path CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("sdh_config.json");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    // The SAVE method
+    // File SAVE method
     public static void save() {
         try (Writer writer = new FileWriter(CONFIG_FILE.toFile())) {
-            // We save IDs (like "minecraft:diamond") instead of the Item object itself
+            // Save IDs (like "minecraft:diamond") instead of Item object itself
             List<String> ids = HIGHLIGHTED_ITEMS.stream()
                     .map(item -> Registries.ITEM.getId(item).toString())
                     .toList();
@@ -33,7 +33,7 @@ public class SDHConfig {
         }
     }
 
-    // The LOAD method
+    // File LOAD method
     public static void load() {
         if (!CONFIG_FILE.toFile().exists()) return;
 

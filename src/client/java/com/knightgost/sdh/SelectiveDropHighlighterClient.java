@@ -22,9 +22,20 @@ public class SelectiveDropHighlighterClient implements ClientModInitializer {
     // This variable prevents the key from firing 20 times a second while held
     private static boolean wasHeld = false;
 
+    // Settings>Controls>Key_Binds here
     public static final KeyBinding.Category SDH_CATEGORY = KeyBinding.Category.create(
             Identifier.of("selective-drop-highlighter", "general")
     );
+
+    private static void playPling(net.minecraft.client.MinecraftClient client, float pitch) {
+        //? if >=1.21.11 {
+        client.getSoundManager().play(PositionedSoundInstance.ui(
+                SoundEvents.BLOCK_NOTE_BLOCK_PLING, pitch));
+        //?} else {
+        /*client.getSoundManager().play(PositionedSoundInstance.master(
+            SoundEvents.BLOCK_NOTE_BLOCK_PLING, pitch));
+        *///?}
+    }
 
     @Override
     public void onInitializeClient() {
@@ -66,16 +77,14 @@ public class SelectiveDropHighlighterClient implements ClientModInitializer {
                             client.player.sendMessage(Text.literal("§eRemoved §6" + itemName), true);
 
                             // Low pitch pling for removal
-                            client.getSoundManager().play(PositionedSoundInstance.master(
-                                    SoundEvents.BLOCK_NOTE_BLOCK_PLING, 0.8f));
+                            playPling(client, 0.8f);
                         } else {
                             // ADD logic
                             SDHConfig.HIGHLIGHTED_ITEMS.add(item);
                             client.player.sendMessage(Text.literal("§aAdded §6" + itemName), true);
 
                             // High pitch pling for success
-                            client.getSoundManager().play(PositionedSoundInstance.master(
-                                    SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1.2f));
+                            playPling(client, 1.2f);
                         }
                         SDHConfig.save();
                     }
@@ -85,8 +94,7 @@ public class SelectiveDropHighlighterClient implements ClientModInitializer {
                     isEnabled = !isEnabled;
 
                     // Simple pling for toggle
-                    client.getSoundManager().play(PositionedSoundInstance.master(
-                            SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1.0f));
+                    playPling(client, 1.0f);
 
                     client.player.sendMessage(Text.literal(
                             "§6[SDH] §fHighlighter: " + (isEnabled ? "§aON" : "§cOFF")
@@ -94,7 +102,7 @@ public class SelectiveDropHighlighterClient implements ClientModInitializer {
                 }
             }
             while (menuKey.wasPressed()) {
-                // Open our new custom screen
+                // Open new custom screen
                 client.setScreen(SDHMenu.createScreen(client.currentScreen));
             }
 

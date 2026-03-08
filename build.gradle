@@ -1,10 +1,33 @@
 plugins {
     id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
     id 'maven-publish'
+    id 'com.gradleup.shadow' version '9.3.0'
+    id "dev.kikugie.stonecutter" version '0.8.3'
 }
 
+configurations {
+    shadow
+    implementation.extendsFrom(shadow)
+}
+tasks.named('remapJar') {
+    dependsOn shadowJar
+    inputFile = shadowJar.archiveFile
+}
 version = project.mod_version
 group = project.maven_group
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+tasks.named('shadowJar', ShadowJar) {
+    configurations = [project.configurations.shadow]
+
+    relocate 'dev.faststats', 'com.knightgost.sdh.libs.faststats'
+
+    exclude 'META-INF/maven/**'
+    exclude 'META-INF/gradle/**'
+
+    archiveClassifier = 'shadow'
+}
 
 base {
     archivesName = project.archives_base_name
@@ -12,10 +35,15 @@ base {
 
 repositories {
     maven {
+        name "thenextlvlReleases"
+        url "https://repo.thenextlvl.net/releases"
+    }
+    maven {
         name 'Xander Maven'
         url 'https://maven.isxander.dev/releases'
     }
-    maven { url 'https://maven.terraformersmc.com/' }
+    maven {
+        url 'https://maven.terraformersmc.com/' }
     mavenCentral()
 }
 
@@ -32,30 +60,34 @@ loom {
 }
 
 dependencies {
-    // To change the versions see the gradle.properties file
+    // versions from gradle.properties
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.minecraft_version}+build.3:v2"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-
     modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
-
-//    modImplementation "dev.isxander:yet-another-config-lib:${project.yacl_version}"
-//
-    // YACL 3 for 1.21.x
-//    modImplementation "dev.isxander:yet-another-config-lib-fabric:3.8.2+1.21.11"
-//    modImplementation "dev.isxander:yet-another-config-lib-fabric:3.6.3+1.21.1"
     modImplementation "dev.isxander:yet-another-config-lib:${project.yacl_version}"
+
+    shadow "dev.faststats.metrics:fabric:${project.faststats_version}"
 }
 
 processResources {
-    inputs.property "version", project.version
+    def resourceTargets = [
+            "version": project.version,
+            "minecraft_version": project.minecraft_version,
+            "loader_version": project.loader_version,
+            "yacl_version": project.yacl_version,
+            "modmenu_version": project.modmenu_version
+    ]
+
+    inputs.properties(resourceTargets)
 
     filesMatching("fabric.mod.json") {
-        expand "version": inputs.properties.version
+        expand(resourceTargets)
     }
+
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -63,9 +95,6 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
     withSourcesJar()
 
     sourceCompatibility = JavaVersion.VERSION_21
@@ -80,7 +109,6 @@ jar {
     }
 }
 
-// configure the maven publication
 publishing {
     publications {
         create("mavenJava", MavenPublication) {
@@ -88,12 +116,16 @@ publishing {
             from components.java
         }
     }
-
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
     repositories {
-        // Add repositories to publish to here.
-        // Notice: This block does NOT have the same function as the block in the top level.
-        // The repositories here will be used for publishing your artifact, not for
-        // retrieving dependencies.
+
     }
 }
+
+//configurations.all {
+//    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+//        if (details.requested.group == 'net.fabricmc.fabric-api') {
+//            details.useVersion("${project.fabric_api_version}")
+//            details.because "Force Stonecutter version-specific API"
+//        }
+//    }
+//}
