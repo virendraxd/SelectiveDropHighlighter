@@ -5,51 +5,16 @@ plugins {
     id "dev.kikugie.stonecutter" version '0.8.3'
 }
 
-configurations {
-    shadow
-    implementation.extendsFrom(shadow)
-}
-tasks.named('remapJar') {
-    dependsOn shadowJar
-    inputFile = shadowJar.archiveFile
-}
-version = project.mod_version
 group = project.maven_group
-
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
-tasks.named('shadowJar', ShadowJar) {
-    configurations = [project.configurations.shadow]
-
-    relocate 'dev.faststats', 'com.knightgost.sdh.libs.faststats'
-
-    exclude 'META-INF/maven/**'
-    exclude 'META-INF/gradle/**'
-
-    archiveClassifier = 'shadow'
-}
+// Standard ModVersion+MCVersion format
+version = "${project.mod_version}+${project.minecraft_version}"
 
 base {
-    archivesName = project.archives_base_name
-}
-
-repositories {
-    maven {
-        name "thenextlvlReleases"
-        url "https://repo.thenextlvl.net/releases"
-    }
-    maven {
-        name 'Xander Maven'
-        url 'https://maven.isxander.dev/releases'
-    }
-    maven {
-        url 'https://maven.terraformersmc.com/' }
-    mavenCentral()
+    archivesName = "${project.archives_base_name}"
 }
 
 loom {
     splitEnvironmentSourceSets()
-
     mods {
         "selective-drop-highlighter" {
             sourceSet sourceSets.main
@@ -59,6 +24,56 @@ loom {
 
 }
 
+configurations {
+    shadow
+    implementation.extendsFrom(shadow)
+}
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+tasks.named('shadowJar', ShadowJar) {
+    configurations = [project.configurations.shadow]
+
+    relocate 'dev.faststats', 'com.knightgost.sdh.libs.faststats'
+
+    // EXCLUDE THESE TO FIX THE CRASH
+    exclude 'net/fabricmc/**'
+    exclude 'org/jetbrains/kotlin/**'
+    exclude 'kotlin/**'
+
+    // Clean up extra metadata
+    exclude 'META-INF/maven/**'
+    exclude 'META-INF/gradle/**'
+    exclude 'META-INF/kotlin_builtins'
+    exclude 'META-INF/*.kotlin_module'
+    // IMPORTANT: This tells Shadow to look in both Main and Client folders
+    from sourceSets.main.output
+    from sourceSets.client.output
+
+    // This ensures the Mixin files are copied to the ROOT of the JAR
+    includeEmptyDirs = false
+    archiveClassifier = 'shadow-dev'
+}
+
+tasks.named('remapJar') {
+    dependsOn shadowJar
+    inputFile = shadowJar.archiveFile
+
+    // This is where we define the FINAL name for Modrinth
+    archiveClassifier = null
+}
+
+tasks.named('jar') {
+    archiveClassifier = 'raw'
+}
+
+repositories {
+    maven {name "thenextlvlReleases"; url "https://repo.thenextlvl.net/releases"}
+    maven {name 'Xander Maven'; url 'https://maven.isxander.dev/releases'}
+    maven {url 'https://maven.terraformersmc.com/' }
+    mavenCentral()
+}
+
 dependencies {
     // versions from gradle.properties
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -66,15 +81,20 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
-    modImplementation "dev.isxander:yet-another-config-lib:${project.yacl_version}"
+//    modImplementation "dev.isxander:yet-another-config-lib:${project.yacl_version}"
+    modImplementation("dev.isxander:yet-another-config-lib:${project.yacl_version}") {
+        exclude group: "net.fabricmc.fabric-api"
+    }
+
+    modRuntimeOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+    modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 
     shadow "dev.faststats.metrics:fabric:${project.faststats_version}"
 }
 
 processResources {
     def resourceTargets = [
-            "version": project.version,
+            "version": project.version, // This will be 1.0.0+1.21.x
             "minecraft_version": project.minecraft_version,
             "loader_version": project.loader_version,
             "yacl_version": project.yacl_version,
@@ -82,21 +102,20 @@ processResources {
     ]
 
     inputs.properties(resourceTargets)
-
     filesMatching("fabric.mod.json") {
         expand(resourceTargets)
     }
-
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 21
+    // Suppresses the unused import warnings caused by Stonecutter comments
+//    it.options.compilerArgs << "-Xlint:-unused"
 }
 
 java {
     withSourcesJar()
-
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
 }
@@ -109,23 +128,22 @@ jar {
     }
 }
 
-publishing {
-    publications {
-        create("mavenJava", MavenPublication) {
-            artifactId = project.archives_base_name
-            from components.java
-        }
-    }
-    repositories {
-
-    }
-}
-
 //configurations.all {
 //    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
 //        if (details.requested.group == 'net.fabricmc.fabric-api') {
 //            details.useVersion("${project.fabric_api_version}")
 //            details.because "Force Stonecutter version-specific API"
 //        }
+//    }
+//}
+
+//publishing {
+//    publications {
+//        create("mavenJava", MavenPublication) {
+//            artifactId = project.archives_base_name
+//            from components.java
+//        }
+//    }
+//    repositories {
 //    }
 //}

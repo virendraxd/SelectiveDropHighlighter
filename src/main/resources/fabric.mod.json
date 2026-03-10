@@ -39,6 +39,9 @@
     "fabric-api": "*",
     "yet_another_config_lib_v3": ">=${yacl_version}"
   },
+  "suggests": {
+    "modmenu": ">=${modmenu_version}"
+  },
   "custom": {
     "modmenu": {
       "links": {
