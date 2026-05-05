@@ -34,8 +34,6 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 tasks.named('shadowJar', ShadowJar) {
     configurations = [project.configurations.shadow]
 
-    relocate 'dev.faststats', 'com.knightgost.sdh.libs.faststats'
-
     // EXCLUDE THESE TO FIX THE CRASH
     exclude 'net/fabricmc/**'
     exclude 'org/jetbrains/kotlin/**'
@@ -89,7 +87,6 @@ dependencies {
     modRuntimeOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
     modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 
-    shadow "dev.faststats.metrics:fabric:${project.faststats_version}"
 }
 
 processResources {
